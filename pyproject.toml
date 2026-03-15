@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "research-agent"
+version = "0.1.0"
+description = "Multi-step research agent with web search, URL reading and Markdown report generation"
+authors = ["Your Name <your.email@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+langchain = "^1.2.0"
+langchain-openai = "^0.1.0"
+langgraph = "^0.1.0"
+ddgs = "^7.0"
+trafilatura = "^2.0.0"
+pydantic = "^2.12.0"
+pydantic-settings = "^2.12.0"
+httpx = "^0.27.0"
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.1.0"
+ruff = "^0.3.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
