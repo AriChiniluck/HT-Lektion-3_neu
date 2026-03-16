@@ -1,4 +1,4 @@
-rom agent import agent
+from agent import agent
 from langchain_core.messages import HumanMessage
 from config import settings
 import threading
