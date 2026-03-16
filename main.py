@@ -3,6 +3,7 @@ from langchain_core.messages import HumanMessage
 from config import settings
 import threading
 import logging
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -60,24 +61,31 @@ def main():
                 continue
 
             output = []
-            # Daemon потік - буде завершений при виході з програми
+            # Daemon потік з більшим timeout
             t = threading.Thread(
                 target=run_agent, 
                 args=(user_input, output, settings.debug),
                 daemon=True
             )
             t.start()
-            t.join(timeout=10)
+            # ✅ ВИПРАВЛЕНО: Збільшено timeout до 30 секунд
+            t.join(timeout=30)
 
             if t.is_alive():
-                print("⏳ Агент завис або не відповідає. Можливо, проблема з інтернетом або інструментами.")
-                print("Спробуй інше формулювання або перевір з'єднання.")
-                continue
+                print("⏳ Агент все ще обробляє запит...")
+                # Чекаємо ще 20 секунд
+                t.join(timeout=20)
+                
+                if t.is_alive():
+                    print("⏳ Агент завис або не відповідає. Можливо, проблема з інтернетом або інструментами.")
+                    print("Спробуй інше формулювання або перевір з'єднання.")
+                    continue
 
+            # ✅ ВИПРАВЛЕНО: Перевіряємо результат ПІСЛЯ того, як потік завершився
             if output:
-                print(f"Agent: {output[-1]}")
+                print(f"Agent: {output[-1]}\n")
             else:
-                print("⚠️ Агент не повернув відповідь.")
+                print("⚠️ Агент не повернув відповідь.\n")
 
         except KeyboardInterrupt:
             print("\n\nПрограма завершена користувачем.")
