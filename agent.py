@@ -72,7 +72,6 @@ TOOLS_LC = [
     calculate_tool_lc,
 ]
 
-# Правильна map для реальних назв LangChain tools
 TOOLS_MAP = {
     "search_tool_lc": search_tool,
     "read_tool_lc": read_tool,
@@ -100,7 +99,7 @@ llm_plain = ChatOpenAI(
 
 
 # ---------------------------------------------------------
-# Prompt - ВИПРАВЛЕНО: Тільки {input}
+# Prompt
 # ---------------------------------------------------------
 prompt = ChatPromptTemplate.from_messages([
     ("system", SYSTEM_PROMPT),
@@ -117,7 +116,7 @@ class AgentState(dict):
 
 
 # ---------------------------------------------------------
-# Agent node - вирішує, викликати інструмент чи ні
+# Agent node
 # ---------------------------------------------------------
 def agent_node(state: AgentState) -> AgentState:
     debug_print("\n=== AGENT NODE ===")
@@ -126,7 +125,7 @@ def agent_node(state: AgentState) -> AgentState:
         debug_print("⚠️ Зупиняю цикл: забагато кроків.")
         return {
             "messages": state["messages"] + [
-                AIMessage(content="⚠️ Зупиняю ��икл: забагато кроків.")
+                AIMessage(content="⚠️ Зупиняю цикл: забагато кроків.")
             ],
             "step_count": state.get("step_count", 0) + 1,
         }
@@ -136,7 +135,6 @@ def agent_node(state: AgentState) -> AgentState:
         "Опиши свій запит."
     )
 
-    # ВИПРАВЛЕНО: format_messages замість format
     formatted = prompt.format_messages(input=last_user)
     response = llm_tools.invoke(formatted)
 
@@ -150,9 +148,9 @@ def agent_node(state: AgentState) -> AgentState:
 
 
 # ---------------------------------------------------------
-# Conditional edge - визначає, чи викликати tool_node
+# Conditional edge
 # ---------------------------------------------------------
-def should_continue(state: AgentState) -> Literal["tool", "end"]:
+def should_continue(state: AgentState) -> Literal["tool", "summarizer"]:
     """Перевіряємо, потрібно ли виконувати інструменти."""
     last = state["messages"][-1]
     
@@ -160,12 +158,12 @@ def should_continue(state: AgentState) -> Literal["tool", "end"]:
         debug_print("→ Переходимо до TOOL NODE")
         return "tool"
     
-    debug_print("→ Завершуємо граф (END)")
-    return "end"
+    debug_print("→ Переходимо до SUMMARIZER NODE")
+    return "summarizer"
 
 
 # ---------------------------------------------------------
-# Tool node - виконує інструменти
+# Tool node
 # ---------------------------------------------------------
 def tool_node(state: AgentState) -> AgentState:
     debug_print("\n=== TOOL NODE ===")
@@ -176,7 +174,6 @@ def tool_node(state: AgentState) -> AgentState:
 
     new_messages = list(state["messages"])
 
-    # Виконуємо інструменти
     for call in last.tool_calls:
         tool_name = call["name"]
         args = call.get("args", {})
@@ -201,7 +198,6 @@ def tool_node(state: AgentState) -> AgentState:
         except Exception as e:
             result = f"❌ Помилка інструменту: {str(e)}"
 
-        # Правильно додаємо ToolMessage
         new_messages.append(ToolMessage(
             tool_call_id=tool_id,
             content=str(result)
@@ -215,12 +211,11 @@ def tool_node(state: AgentState) -> AgentState:
 
 
 # ---------------------------------------------------------
-# Summarizer node - генерує фінальну відповідь
+# Summarizer node
 # ---------------------------------------------------------
 def summarizer_node(state: AgentState) -> AgentState:
     debug_print("\n=== SUMMARIZER NODE ===")
 
-    # Збираємо результати інструментів
     tool_results = [
         msg.content for msg in state["messages"]
         if isinstance(msg, ToolMessage)
@@ -228,23 +223,29 @@ def summarizer_node(state: AgentState) -> AgentState:
 
     if not tool_results:
         debug_print("Немає результатів інструментів.")
+        # Якщо немає результатів, повертаємо як є
         return state
 
     summary_prompt = [
         HumanMessage(content="На основі результатів пошуку, сформуй детальну та структуровану відповідь українською мовою:"),
-        HumanMessage(content="\n\n".join(tool_results[:5])),  # Обмежуємо до 5 результатів
+        HumanMessage(content="\n\n".join(tool_results[:5])),
     ]
 
     try:
         final_answer_msg = llm_plain.invoke(summary_prompt)
         debug_print(f"Final answer: {final_answer_msg.content[:100]}...")
+        
+        # ✅ ВИПРАВЛЕНО: Правильно повертаємо новий стан з фінальною відповіддю
+        new_messages = state["messages"] + [final_answer_msg]
+        
         return {
-            "messages": state["messages"] + [final_answer_msg],
+            "messages": new_messages,
             "step_count": state.get("step_count", 0),
         }
     except Exception as e:
         debug_print(f"Error in summarizer: {e}")
         error_msg = AIMessage(content=f"❌ Помилка при формуванні відповіді: {str(e)}")
+        
         return {
             "messages": state["messages"] + [error_msg],
             "step_count": state.get("step_count", 0),
@@ -252,14 +253,14 @@ def summarizer_node(state: AgentState) -> AgentState:
 
 
 # ---------------------------------------------------------
-# Save node - зберігає результат у файл
+# Save node - ВИПРАВЛЕНО: Повертаємо завжди стан
 # ---------------------------------------------------------
 def save_node(state: AgentState) -> AgentState:
     debug_print("\n=== SAVE NODE ===")
 
     last = state["messages"][-1]
     if not isinstance(last, AIMessage) or not last.content:
-        return state
+        return state  # ✅ Якщо немає що зберігати, повертаємо стан як є
 
     try:
         filename = generate_filename_from_query(last.content)
@@ -268,41 +269,35 @@ def save_node(state: AgentState) -> AgentState:
     except Exception as e:
         debug_print(f"❌ Error saving file: {e}")
 
+    # ✅ ВИПРАВЛЕНО: Завжди повертаємо стан (без змін)
     return state
 
 
 # ---------------------------------------------------------
-# Build Graph
+# Build Graph - ВИПРАВЛЕНО
 # ---------------------------------------------------------
 workflow = StateGraph(AgentState)
 
-# Додаємо всі nodes
 workflow.add_node("agent", agent_node)
 workflow.add_node("tool", tool_node)
 workflow.add_node("summarizer", summarizer_node)
 workflow.add_node("save", save_node)
 
-# Визначаємо потік
 workflow.set_entry_point("agent")
 
-# Умовний перехід: agent → tool або end
+# ✅ ВИПРАВЛЕНО: Правильний потік
 workflow.add_conditional_edges(
     "agent",
     should_continue,
     {
         "tool": "tool",
-        "end": "summarizer"  # Якщо немає tool_calls, йдемо до summarizer
+        "summarizer": "summarizer"
     }
 )
 
-# tool → summarizer (завжди)
 workflow.add_edge("tool", "summarizer")
-
-# summarizer → save (завжди)
 workflow.add_edge("summarizer", "save")
-
-# save → END
-workflow.add_edge("save", END)
+workflow.add_edge("save", END)  # ✅ save → END
 
 memory = MemorySaver()
 agent = workflow.compile(checkpointer=memory)
