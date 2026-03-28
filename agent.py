@@ -1,11 +1,10 @@
 from typing import List, Dict, Any, Literal
 import concurrent.futures
 
-from langchain_core.messages import HumanMessage, AIMessage, BaseMessage, ToolMessage
+from langchain_core.messages import HumanMessage, AIMessage, BaseMessage, ToolMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 from langgraph.graph import StateGraph, END
 from langgraph.checkpoint.memory import MemorySaver
-from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.tools import tool
 
 from tools import (
@@ -99,15 +98,6 @@ llm_plain = ChatOpenAI(
 
 
 # ---------------------------------------------------------
-# Prompt
-# ---------------------------------------------------------
-prompt = ChatPromptTemplate.from_messages([
-    ("system", SYSTEM_PROMPT),
-    ("user", "{input}"),
-])
-
-
-# ---------------------------------------------------------
 # State
 # ---------------------------------------------------------
 class AgentState(dict):
@@ -130,13 +120,9 @@ def agent_node(state: AgentState) -> AgentState:
             "step_count": state.get("step_count", 0) + 1,
         }
 
-    last_user = next(
-        (msg.content for msg in reversed(state["messages"]) if isinstance(msg, HumanMessage)),
-        "Опиши свій запит."
-    )
-
-    formatted = prompt.format_messages(input=last_user)
-    response = llm_tools.invoke(formatted)
+    # Pass system prompt + full message history so the agent sees all tool results
+    messages = [SystemMessage(content=SYSTEM_PROMPT)] + list(state["messages"])
+    response = llm_tools.invoke(messages)
 
     debug_print(f"Response type: {type(response)}")
     debug_print(f"Tool calls: {getattr(response, 'tool_calls', None)}")
@@ -295,7 +281,7 @@ workflow.add_conditional_edges(
     }
 )
 
-workflow.add_edge("tool", "summarizer")
+workflow.add_edge("tool", "agent")  # cycle back so agent sees tool results
 workflow.add_edge("summarizer", "save")
 workflow.add_edge("save", END)  # ✅ save → END
 
