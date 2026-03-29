@@ -46,7 +46,7 @@ class Settings(BaseSettings):
     )
 
     class Config:
-        env_file = ".env"
+        env_file = str(Path(__file__).parent / ".env")
         env_file_encoding = "utf-8"
         extra = "ignore"
 
@@ -104,7 +104,7 @@ try:
     if not env_path.exists():
         raise FileNotFoundError(
             "\n"
-            "❌ .env файл не знайдений!\n"
+            "[ERROR].env файл не знайдений!\n"
             "\n"
             "Створіть файл '.env' у кореневому каталозі проекту з наступним вмістом:\n"
             "\n"
@@ -118,7 +118,7 @@ try:
             "Отримайте API ключ на: https://platform.openai.com/api-keys\n"
         )
 except Exception as e:
-    print(f"❌ Помилка конфігурації: {e}")
+    print(f"Помилка конфігурації: {e}")
     exit(1)
 
 
@@ -154,9 +154,16 @@ WHEN TO USE EACH TOOL:
 - Use read_tool_lc when you have a specific URL and need detailed information from it
 - Use save_report_tool_lc when explicitly asked to save, create a report, or export content
 - Use calculate_tool_lc for mathematical calculations and expressions
-- Use list_files_tool_lc and read_file_tool to work with existing files
+- Use list_files_tool_lc and read_file_tool_lc to work with existing files
+- For age calculations with “today”, use the current date, not a fixed year.
+MANDATORY: For ANY question about weather, news, current events, prices, 
+or any date after your training cutoff — you MUST call search_tool_lc 
+BEFORE answering. Never answer these questions from memory alone.
 
 CRITICAL RULES:
+
+You have access to the full conversation history in this session.
+Never say you cannot see previous user messages; use chat history to resolve follow-up questions.
 
 DO:
 �� Use tools when you need external information
