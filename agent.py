@@ -134,7 +134,7 @@ def agent_node(state: AgentState) -> AgentState:
     )
 
     formatted = prompt.format_messages(input=last_user)
-    response = llm_tools.invoke(formatted)
+    ✅ ВИПРАВЛЕНО: видалено response = llm_tools.invoke(messages) подвійний виклик LLM в одному вузлі
     
     # Pass system prompt + full message history so the agent sees all tool results
     messages = [SystemMessage(content=SYSTEM_PROMPT)] + list(state["messages"])
