@@ -1,0 +1,86 @@
+You: який вік режисера фільма "п'ятий елемент"
+[DEBUG]
+=== AGENT NODE ===
+[DEBUG] State messages count: 1
+[DEBUG] Last message types (up to 3): ['HumanMessage']
+[DEBUG] Last message roles (up to 3): ['human']
+[DEBUG] Response type: <class 'langchain_core.messages.ai.AIMessage'>
+[DEBUG] Tool calls: [{'name': 'search_tool_lc', 'args': {'query': 'Luc Besson age'}, 'id': 'call_YEmTYvb6pOSC6n24rdurnfkN', 'type': 'tool_call'}]
+[DEBUG] → Переходимо до TOOL NODE
+[DEBUG]
+=== TOOL NODE ===
+[DEBUG] Executing tool: search_tool_lc with args: {'query': 'Luc Besson age'}
+[DEBUG] search_tool called with query: Luc Besson age
+[DEBUG] Tool result: [{'title': 'Luc Besson: Birthday, Age, and Zodiac', 'href': 'https://happyhappybirthday.net/en/age/l...
+[DEBUG]
+=== AGENT NODE ===
+[DEBUG] State messages count: 3
+[DEBUG] Last message types (up to 3): ['HumanMessage', 'AIMessage', 'ToolMessage']
+[DEBUG] Last message roles (up to 3): ['human', 'ai', 'tool']
+[DEBUG] Response type: <class 'langchain_core.messages.ai.AIMessage'>
+[DEBUG] Tool calls: []
+[DEBUG] → Переходимо до SUMMARIZER NODE
+[DEBUG]
+=== SUMMARIZER NODE ===
+[DEBUG] Final answer: Люк Бессон — відомий французький режисер, сценарист і продюсер, який народився 18 березня 1959 року ...
+[DEBUG]
+=== SAVE NODE ===
+[DEBUG] save_report_tool called with filename=люк_бессон_відомий_2026-03-29_040447.txt
+[DEBUG] Saved to: ✅ Файл збережено: C:\Users\HF\OneDrive\Iryna\ArchivData comp WINDOWS\Курсы\RobotDreams-2026\MULTI-AGENT SYSTEMS\Lektion 3\HT Lektion 3\output\люк_бессон_відомий_2026-03-29_040447.txt
+Agent: Люк Бессон — відомий французький режисер, сценарист і продюсер, який народився 18 березня 1959 року в Парижі, Франція. Його кар'єра в кіноіндустрії розпочалася в підлітковому віці, коли він почав писати історії. У 18 років він переїхав до Парижа, де працював на різних посадах на знімальних майданчиках, паралельно займаючись режисурою.
+
+Бессон здобув популярність завдяки своїм фільмам, які відзначаються унікальним візуальним стилем та динамічними сюжетами. Серед його найвідоміших робіт — "П'ятий елемент", "Леон: Професіонал" та "Блакитна безодня". Крім того, він відомий як продюсер таких фільмів, як "Метро" (1985) та інших.
+
+На сьогодні Люк Бессон є однією з ключових фігур у світовій кіноіндустрії, продовжуючи впливати на розвиток кінематографа своїми новаторськими ідеями та проектами.
+
+
+You: а можеш порахувати його вік согодні?
+[DEBUG]
+=== AGENT NODE ===
+[DEBUG] State messages count: 6
+[DEBUG] Last message types (up to 3): ['AIMessage', 'AIMessage', 'HumanMessage']
+[DEBUG] Last message roles (up to 3): ['ai', 'ai', 'human']
+[DEBUG] Response type: <class 'langchain_core.messages.ai.AIMessage'>
+[DEBUG] Tool calls: [{'name': 'calculate_tool_lc', 'args': {'expression': '2023 - 1959'}, 'id': 'call_JFMmZqeSWRP7XDh3f0mabmfp', 'type': 'tool_call'}]
+[DEBUG] → Переходимо до TOOL NODE
+[DEBUG]
+=== TOOL NODE ===
+[DEBUG] Executing tool: calculate_tool_lc with args: {'expression': '2023 - 1959'}
+[DEBUG] calculate_tool called with expression: 2023 - 1959
+[DEBUG] Tool result: 64...
+[DEBUG]
+=== AGENT NODE ===
+[DEBUG] State messages count: 8
+[DEBUG] Last message types (up to 3): ['HumanMessage', 'AIMessage', 'ToolMessage']
+[DEBUG] Last message roles (up to 3): ['human', 'ai', 'tool']
+[DEBUG] Response type: <class 'langchain_core.messages.ai.AIMessage'>
+[DEBUG] Tool calls: []
+[DEBUG] → Переходимо до SUMMARIZER NODE
+[DEBUG]
+=== SUMMARIZER NODE ===
+[DEBUG] Final answer: Люк Бессон — відомий французький режисер, сценарист і продюсер, який народився 18 березня 1959 року ...
+[DEBUG]
+=== SAVE NODE ===
+[DEBUG] save_report_tool called with filename=люк_бессон_відомий_2026-03-29_040529.txt
+[DEBUG] Saved to: ✅ Файл збережено: C:\Users\HF\OneDrive\Iryna\ArchivData comp WINDOWS\Курсы\RobotDreams-2026\MULTI-AGENT SYSTEMS\Lektion 3\HT Lektion 3\output\люк_бессон_відомий_2026-03-29_040529.txt
+Agent: Люк Бессон — відомий французький режисер, сценарист і продюсер, який народився 18 березня 1959 року в Парижі, Франція. Його кар'єра в кіноіндустрії розпочалася ще в підлітковому віці, коли він почав писати історії. У 18 років Бессон переїхав до Парижа, де працював на різних посадах на знімальних майданчиках, одночасно займаючись режисурою.
+
+Бессон здобув популярність завдяки своїм фільмам, які відзначаються унікальним візуальним стилем та насиченими екшн-сценами. Серед його найвідоміших робіт — "П'ятий елемент", "Леон: Професіонал" та "Блакитна безодня". Крім того, він відомий як продюсер таких фільмів, як "Підземка" (1985) та "Блакитна безодня".
+
+Станом на сьогодні, Люк Бессон має 66 років і продовжує активно працювати в кіноіндустрії, залишаючись одним із найвпливовіших режисерів свого покоління.
+
+
+You: exit
+Goodbye!
+
+C:\Users\HF\OneDrive\Iryna\ArchivData comp WINDOWS\Курсы\RobotDreams-2026\MULTI-AGENT SYSTEMS\Lektion 3\HT Lektion 3>python main.py
+Research Agent (type 'exit' to quit)
+Debug mode: OFF
+----------------------------------------
+
+You: учше
+Agent: Вітаю! Як я можу вам допомогти сьогодні?
+
+
+You: exit
+Goodbye!
