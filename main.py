@@ -3,18 +3,17 @@ from langchain_core.messages import HumanMessage
 from config import settings
 import threading
 import logging
-import time
 
 logger = logging.getLogger(__name__)
 
-def run_agent(user_input, output_container, debug=False):
+def run_agent(user_input, output_container):
     try:
         result = agent.invoke(
             {
                 "messages": [HumanMessage(content=user_input)],
                 "step_count": 0,
             },
-            config={"thread_id": "session-1"},
+            config={"configurable": {"thread_id": "session-1"}},
         )
 
         messages = result.get("messages", [])
@@ -63,8 +62,8 @@ def main():
             output = []
             # Daemon потік з більшим timeout
             t = threading.Thread(
-                target=run_agent, 
-                args=(user_input, output, settings.debug),
+                target=run_agent,
+                args=(user_input, output),
                 daemon=True
             )
             t.start()

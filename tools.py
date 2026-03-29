@@ -265,7 +265,7 @@ def calculate_tool(expression: str):
                 raise ValueError("❌ Функції не дозволені")
             # Забороняємо довільні змінні
             if isinstance(child, ast.Name):
-                if child.id not in {'pi', 'e', 'sqrt'}:
+                if child.id not in {'pi', 'e'}:
                     raise ValueError(f"❌ Змінна '{child.id}' не дозволена")
         
         # Безпечно обчислюємо

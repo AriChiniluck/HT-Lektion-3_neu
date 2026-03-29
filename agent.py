@@ -1,11 +1,13 @@
-from typing import List, Dict, Any, Literal
+from typing import List, Literal, Annotated
 import concurrent.futures
 
 from langchain_core.messages import HumanMessage, AIMessage, BaseMessage, ToolMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 from langgraph.graph import StateGraph, END
+from langgraph.graph.message import add_messages
 from langgraph.checkpoint.memory import MemorySaver
 from langchain_core.tools import tool
+from typing_extensions import TypedDict
 
 from tools import (
     extract_keywords,
@@ -100,8 +102,8 @@ llm_plain = ChatOpenAI(
 # ---------------------------------------------------------
 # State
 # ---------------------------------------------------------
-class AgentState(dict):
-    messages: List[BaseMessage]
+class AgentState(TypedDict):
+    messages: Annotated[List[BaseMessage], add_messages]
     step_count: int
 
 
@@ -114,9 +116,7 @@ def agent_node(state: AgentState) -> AgentState:
     if state.get("step_count", 0) > 10:
         debug_print("⚠️ Зупиняю цикл: забагато кроків.")
         return {
-            "messages": state["messages"] + [
-                AIMessage(content="⚠️ Зупиняю цикл: забагато кроків.")
-            ],
+            "messages": [AIMessage(content="⚠️ Зупиняю цикл: забагато кроків.")],
             "step_count": state.get("step_count", 0) + 1,
         }
 
@@ -128,7 +128,7 @@ def agent_node(state: AgentState) -> AgentState:
     debug_print(f"Tool calls: {getattr(response, 'tool_calls', None)}")
 
     return {
-        "messages": state["messages"] + [response],
+        "messages": [response],
         "step_count": state.get("step_count", 0) + 1,
     }
 
@@ -156,9 +156,9 @@ def tool_node(state: AgentState) -> AgentState:
 
     last = state["messages"][-1]
     if not isinstance(last, AIMessage) or not getattr(last, "tool_calls", None):
-        return state
+        return {}
 
-    new_messages = list(state["messages"])
+    new_tool_messages = []
 
     for call in last.tool_calls:
         tool_name = call["name"]
@@ -169,7 +169,7 @@ def tool_node(state: AgentState) -> AgentState:
 
         tool_fn = TOOLS_MAP.get(tool_name)
         if not tool_fn:
-            new_messages.append(ToolMessage(
+            new_tool_messages.append(ToolMessage(
                 tool_call_id=tool_id,
                 content=f"❌ Невідомий інструмент: {tool_name}"
             ))
@@ -184,14 +184,14 @@ def tool_node(state: AgentState) -> AgentState:
         except Exception as e:
             result = f"❌ Помилка інструменту: {str(e)}"
 
-        new_messages.append(ToolMessage(
+        new_tool_messages.append(ToolMessage(
             tool_call_id=tool_id,
             content=str(result)
         ))
         debug_print(f"Tool result: {str(result)[:100]}...")
 
     return {
-        "messages": new_messages,
+        "messages": new_tool_messages,
         "step_count": state.get("step_count", 0),
     }
 
@@ -209,8 +209,7 @@ def summarizer_node(state: AgentState) -> AgentState:
 
     if not tool_results:
         debug_print("Немає результатів інструментів.")
-        # Якщо немає результатів, повертаємо як є
-        return state
+        return {}
 
     summary_prompt = [
         HumanMessage(content="На основі результатів пошуку, сформуй детальну та структуровану відповідь українською мовою:"),
@@ -220,33 +219,30 @@ def summarizer_node(state: AgentState) -> AgentState:
     try:
         final_answer_msg = llm_plain.invoke(summary_prompt)
         debug_print(f"Final answer: {final_answer_msg.content[:100]}...")
-        
-        # ✅ ВИПРАВЛЕНО: Правильно повертаємо новий стан з фінальною відповіддю
-        new_messages = state["messages"] + [final_answer_msg]
-        
+
         return {
-            "messages": new_messages,
+            "messages": [final_answer_msg],
             "step_count": state.get("step_count", 0),
         }
     except Exception as e:
         debug_print(f"Error in summarizer: {e}")
         error_msg = AIMessage(content=f"❌ Помилка при формуванні відповіді: {str(e)}")
-        
+
         return {
-            "messages": state["messages"] + [error_msg],
+            "messages": [error_msg],
             "step_count": state.get("step_count", 0),
         }
 
 
 # ---------------------------------------------------------
-# Save node - ВИПРАВЛЕНО: Повертаємо завжди стан
+# Save node
 # ---------------------------------------------------------
 def save_node(state: AgentState) -> AgentState:
     debug_print("\n=== SAVE NODE ===")
 
     last = state["messages"][-1]
     if not isinstance(last, AIMessage) or not last.content:
-        return state  # ✅ Якщо немає що зберігати, повертаємо стан як є
+        return {}
 
     try:
         filename = generate_filename_from_query(last.content)
@@ -255,12 +251,11 @@ def save_node(state: AgentState) -> AgentState:
     except Exception as e:
         debug_print(f"❌ Error saving file: {e}")
 
-    # ✅ ВИПРАВЛЕНО: Завжди повертаємо стан (без змін)
-    return state
+    return {}
 
 
 # ---------------------------------------------------------
-# Build Graph - ВИПРАВЛЕНО
+# Build Graph
 # ---------------------------------------------------------
 workflow = StateGraph(AgentState)
 
@@ -271,7 +266,6 @@ workflow.add_node("save", save_node)
 
 workflow.set_entry_point("agent")
 
-# ✅ ВИПРАВЛЕНО: Правильний потік
 workflow.add_conditional_edges(
     "agent",
     should_continue,
@@ -281,9 +275,9 @@ workflow.add_conditional_edges(
     }
 )
 
-workflow.add_edge("tool", "agent")  # cycle back so agent sees tool results
+workflow.add_edge("tool", "agent")
 workflow.add_edge("summarizer", "save")
-workflow.add_edge("save", END)  # ✅ save → END
+workflow.add_edge("save", END)
 
 memory = MemorySaver()
 agent = workflow.compile(checkpointer=memory)
