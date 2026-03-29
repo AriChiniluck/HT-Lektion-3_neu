@@ -1,6 +1,6 @@
 .env
 __pycache__/
 *.pyc
-output/
+output_example
 .idea/
 *.ipynb
