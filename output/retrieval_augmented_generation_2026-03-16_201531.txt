@@ -1,0 +1,31 @@
+Retrieval-Augmented Generation (RAG) is a framework that combines retrieval-based methods with generative models to improve the performance of tasks such as question answering and information retrieval. In RAG, the retrieval component is crucial as it determines which pieces of information are used to generate the final response. Here’s a comparison of three retrieval strategies: naive, sentence window, and parent-child retrieval.
+
+### Naive Retrieval
+- **Description**: This is the simplest form of retrieval where the system retrieves documents or passages based on keyword matching or basic similarity measures.
+- **Advantages**:
+  - **Simplicity**: Easy to implement and understand.
+  - **Speed**: Generally faster due to its straightforward approach.
+- **Disadvantages**:
+  - **Relevance**: May retrieve irrelevant documents if the keywords are too broad or common.
+  - **Context Ignorance**: Does not consider the context or structure of the document, leading to potential loss of nuanced information.
+
+### Sentence Window Retrieval
+- **Description**: This approach retrieves information based on a sliding window of sentences around a keyword or query term. It focuses on a specific segment of text rather than entire documents.
+- **Advantages**:
+  - **Contextual Relevance**: By focusing on a window of sentences, it captures more context around the query terms.
+  - **Precision**: Can lead to more precise retrieval as it narrows down the search space to relevant sections.
+- **Disadvantages**:
+  - **Complexity**: More complex to implement than naive retrieval.
+  - **Window Size Sensitivity**: The choice of window size can significantly affect performance; too small might miss context, too large might include irrelevant information.
+
+### Parent-Child Retrieval
+- **Description**: This method involves hierarchical retrieval where the system first retrieves parent documents and then focuses on child elements (e.g., sections, paragraphs) within those documents.
+- **Advantages**:
+  - **Hierarchical Context**: Utilizes the document structure to maintain context and relevance.
+  - **Scalability**: Efficiently narrows down large datasets by first filtering at a higher level.
+- **Disadvantages**:
+  - **Implementation Complexity**: Requires a more sophisticated system to manage hierarchical relationships.
+  - **Dependency on Structure**: Effectiveness can be limited by the quality and consistency of document structuring.
+
+### Conclusion
+Each retrieval strategy has its own strengths and weaknesses, and the choice of which to use depends on the specific requirements of the task and the nature of the data. Naive retrieval is suitable for simple tasks with well-defined keywords, sentence window retrieval is beneficial when context around keywords is crucial, and parent-child retrieval is ideal for structured data where hierarchical relationships can be leveraged.

@@ -1,0 +1,7 @@
+To install the `ddgs` package using pip, you can run the following command in your terminal or command prompt:
+
+```bash
+pip install ddgs
+```
+
+This command will download and install the `ddgs` package from the Python Package Index (PyPI). Make sure you have Python and pip installed on your system before running this command. If you encounter any issues during installation, please let me know, and I can help troubleshoot them.

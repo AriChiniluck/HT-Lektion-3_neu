@@ -1,0 +1,35 @@
+Retrieval-Augmented Generation (RAG) is a framework that combines retrieval mechanisms with generative models to improve the quality of generated responses by incorporating relevant external information. In RAG, different retrieval strategies can be employed to fetch relevant documents or passages that aid in generating more accurate and contextually relevant responses. Let's compare three retrieval strategies: naive, sentence window, and parent-child retrieval.
+
+### Naive Retrieval
+- **Description**: This is the simplest form of retrieval where the entire document or a large chunk of text is considered as a single unit for retrieval.
+- **Advantages**:
+  - Simplicity: Easy to implement and requires minimal preprocessing.
+  - Comprehensive: Retrieves large amounts of information, which can be beneficial if the document is highly relevant.
+- **Disadvantages**:
+  - Inefficiency: Can retrieve a lot of irrelevant information, leading to noise.
+  - Lack of Focus: May not pinpoint specific relevant sections, reducing the precision of the generated response.
+
+### Sentence Window Retrieval
+- **Description**: This strategy involves breaking down the document into smaller segments, such as sentences or fixed-size windows of text, and retrieving these smaller units.
+- **Advantages**:
+  - Precision: More likely to retrieve specific and relevant information, improving the quality of the response.
+  - Flexibility: Allows for fine-tuning the window size to balance between context and specificity.
+- **Disadvantages**:
+  - Complexity: Requires more preprocessing to segment the text.
+  - Context Loss: Smaller windows might miss broader context, leading to fragmented information retrieval.
+
+### Parent-Child Retrieval
+- **Description**: This approach involves hierarchical retrieval, where a parent document is first retrieved, followed by more focused retrieval of child segments within that document.
+- **Advantages**:
+  - Contextual Hierarchy: Maintains a balance between broad context (parent) and specific details (child).
+  - Efficiency: Reduces noise by narrowing down from a relevant parent document to specific sections.
+- **Disadvantages**:
+  - Complexity: More complex to implement due to the need for hierarchical structuring and retrieval logic.
+  - Dependency: Relies on the initial retrieval of a relevant parent document, which if incorrect, can lead to irrelevant child retrievals.
+
+### Summary
+- **Naive Retrieval** is best for scenarios where simplicity and broad coverage are desired, but it may introduce noise.
+- **Sentence Window Retrieval** offers precision and is suitable for tasks requiring specific information, though it might lose broader context.
+- **Parent-Child Retrieval** provides a balanced approach, maintaining context while focusing on relevant details, but it requires a more complex setup.
+
+Each strategy has its own strengths and weaknesses, and the choice of retrieval method in RAG depends on the specific requirements of the task, such as the need for precision, context, and computational resources.

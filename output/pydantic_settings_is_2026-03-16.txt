@@ -1,0 +1,38 @@
+`pydantic-settings` is a module in Python that provides a way to manage application settings using Pydantic models. It allows you to define settings in a structured way, leveraging Pydantic's data validation and parsing capabilities.
+
+Here's a basic example of how to use `pydantic-settings` with `BaseSettings`:
+
+1. **Install Pydantic**: If you haven't already, you need to install Pydantic. You can do this using pip:
+
+   ```bash
+   pip install pydantic
+   ```
+
+2. **Define Your Settings**: Create a class that inherits from `BaseSettings`. Each attribute of the class represents a configuration setting.
+
+   ```python
+   from pydantic_settings import BaseSettings
+
+   class Settings(BaseSettings):
+       app_name: str = "My Awesome App"
+       debug: bool = False
+       database_url: str
+
+       class Config:
+           env_file = ".env"
+
+   # Load settings
+   settings = Settings()
+   ```
+
+3. **Environment Variables**: You can specify default values in your class, and these can be overridden by environment variables. The `env_file` option allows you to specify a file (like `.env`) from which to load environment variables.
+
+4. **Usage**: Once you have defined your settings class, you can access the settings as attributes of an instance of the class.
+
+   ```python
+   print(settings.app_name)
+   print(settings.debug)
+   print(settings.database_url)
+   ```
+
+This approach is particularly useful for managing configuration in applications, especially when dealing with different environments (development, testing, production) where configuration might change. The use of environment variables and `.env` files makes it easy to manage these differences without changing the code.

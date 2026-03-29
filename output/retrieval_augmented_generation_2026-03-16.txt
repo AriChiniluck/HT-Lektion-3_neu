@@ -1,0 +1,35 @@
+Retrieval-Augmented Generation (RAG) is a framework that combines retrieval-based methods with generative models to improve the quality of generated responses. In RAG, the retrieval component is crucial for fetching relevant information that can be used by the generative model to produce more accurate and contextually appropriate outputs. Let's compare the three retrieval methods mentioned: naive, sentence window, and parent-child retrieval.
+
+### Naive Retrieval
+- **Description**: Naive retrieval is a straightforward approach where the retrieval system fetches documents or passages based on simple keyword matching or basic similarity measures.
+- **Pros**:
+  - **Simplicity**: Easy to implement and understand.
+  - **Speed**: Generally fast due to its simplicity.
+- **Cons**:
+  - **Accuracy**: May not retrieve the most relevant documents, especially if the query is complex or requires understanding context.
+  - **Contextual Understanding**: Lacks the ability to understand the context or nuances in the query.
+
+### Sentence Window Retrieval
+- **Description**: This method involves retrieving information based on a sliding window of sentences around a query term. It focuses on capturing the context within a certain number of sentences.
+- **Pros**:
+  - **Contextual Relevance**: Better at capturing context around the query, leading to more relevant retrievals.
+  - **Flexibility**: Can be adjusted by changing the window size to balance between context and specificity.
+- **Cons**:
+  - **Complexity**: More complex than naive retrieval, requiring additional processing to manage sentence windows.
+  - **Performance**: May be slower than naive retrieval due to the need to process multiple sentence windows.
+
+### Parent-Child Retrieval
+- **Description**: This approach involves retrieving information based on hierarchical relationships, such as parent-child structures in documents (e.g., sections and subsections).
+- **Pros**:
+  - **Hierarchical Understanding**: Captures the hierarchical structure of information, which can be crucial for understanding complex documents.
+  - **Relevance**: Often retrieves more contextually and hierarchically relevant information.
+- **Cons**:
+  - **Complexity**: More complex to implement due to the need to understand and process document hierarchies.
+  - **Resource Intensive**: May require more computational resources to parse and maintain hierarchical structures.
+
+### Conclusion
+- **Naive Retrieval** is best suited for simple queries where speed is a priority and the complexity of the query is low.
+- **Sentence Window Retrieval** offers a good balance between context and simplicity, making it suitable for queries where context around specific terms is important.
+- **Parent-Child Retrieval** is ideal for complex queries that benefit from understanding the hierarchical structure of documents, though it requires more resources and complexity in implementation.
+
+Each method has its own strengths and weaknesses, and the choice of which to use depends on the specific requirements of the task, such as the complexity of the queries, the importance of context, and the available computational resources.

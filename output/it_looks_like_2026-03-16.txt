@@ -1,0 +1,1 @@
+It looks like you're trying to define a field for a model, possibly in a programming context like Pydantic or FastAPI. If you need help with defining a model or understanding how to use fields in a specific framework, please provide more details or clarify your request.

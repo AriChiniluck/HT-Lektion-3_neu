@@ -1,0 +1,6 @@
+1. search_tool(query: str) — Search the internet using DuckDuckGo
+2. read_tool(url: str) — Extract and read text from a webpage
+3. save_report_tool(filename: str, content: str) — Save content to a text file
+4. list_files_tool(directory: str) — List files in a directory
+5. read_file_tool(path: str) — Read content from a saved file
+6. calculate_tool(expression: str) — Perform mathematical calculations
