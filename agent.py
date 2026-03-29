@@ -1,5 +1,6 @@
 from typing import List, Literal, Annotated
 import concurrent.futures
+import re
 
 from langchain_core.messages import HumanMessage, AIMessage, BaseMessage, ToolMessage, SystemMessage
 from langchain_openai import ChatOpenAI
@@ -199,6 +200,30 @@ def tool_node(state: AgentState) -> AgentState:
 # ---------------------------------------------------------
 # Summarizer node
 # ---------------------------------------------------------
+
+# Keywords that signal the query requires real-time data and MUST use search_tool.
+_REALTIME_KEYWORDS = (
+    "погода", "weather", "прогноз", "forecast",
+    "новини", "news", "курс валют", "exchange rate",
+    "ціна", "price", "розклад", "schedule",
+    "сьогодні", "today", "завтра", "tomorrow", "вчора", "yesterday",
+)
+
+def _needs_search(messages) -> bool:
+    """Return True if the original user query is about real-time / date-specific data."""
+    for msg in messages:
+        if isinstance(msg, HumanMessage):
+            text = msg.content.lower()
+            if any(kw in text for kw in _REALTIME_KEYWORDS):
+                return True
+            # Heuristic: detect a date token (e.g. 30.03.2026 or 2026-03-30).
+            # We don't need to validate calendar correctness — any date-like token
+            # strongly suggests the user wants time-specific real-world information.
+            if re.search(r'\d{1,2}[./]\d{1,2}[./]\d{4}|\d{4}-\d{2}-\d{2}', text):
+                return True
+    return False
+
+
 def summarizer_node(state: AgentState) -> AgentState:
     debug_print("\n=== SUMMARIZER NODE ===")
 
@@ -209,6 +234,20 @@ def summarizer_node(state: AgentState) -> AgentState:
 
     if not tool_results:
         debug_print("Немає результатів інструментів.")
+        # If the query clearly required real-time data but the agent skipped tools,
+        # inject an explicit reminder so agent_node re-runs and searches this time.
+        if _needs_search(state["messages"]):
+            debug_print("Запит потребує пошуку — надсилаємо нагадування агенту.")
+            reminder = HumanMessage(
+                content=(
+                    "⚠️ Ти не скористався search_tool, але це запитання вимагає актуальних даних з інтернету. "
+                    "Будь ласка, негайно виконай search_tool з відповідним запитом, щоб отримати реальну інформацію."
+                )
+            )
+            return {
+                "messages": [reminder],
+                "step_count": state.get("step_count", 0),
+            }
         return {}
 
     summary_prompt = [
@@ -276,7 +315,24 @@ workflow.add_conditional_edges(
 )
 
 workflow.add_edge("tool", "agent")
-workflow.add_edge("summarizer", "save")
+
+# After summarizer: if it injected a reminder (HumanMessage) loop back to agent;
+# otherwise proceed to save.
+def after_summarizer(state: AgentState) -> Literal["agent", "save"]:
+    last = state["messages"][-1]
+    if isinstance(last, HumanMessage):
+        debug_print("→ Summarizer injected reminder → back to AGENT")
+        return "agent"
+    return "save"
+
+workflow.add_conditional_edges(
+    "summarizer",
+    after_summarizer,
+    {
+        "agent": "agent",
+        "save": "save",
+    }
+)
 workflow.add_edge("save", END)
 
 memory = MemorySaver()

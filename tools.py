@@ -1,12 +1,12 @@
 import os
 import re
 import ast
-import operator
+import math
 import socket
 from datetime import datetime
 from urllib.parse import urlparse
 import trafilatura
-from ddgs import DDGS  # ✅ ЗМІНЕНО: duckduckgo_search → ddgs
+from ddgs import DDGS
 from config import settings
 
 
@@ -263,13 +263,15 @@ def calculate_tool(expression: str):
             # Забороняємо функції
             if isinstance(child, ast.Call):
                 raise ValueError("❌ Функції не дозволені")
-            # Забороняємо довільні змінні
+            # Забороняємо довільні змінні.
+            # 'pi' and 'e' are the only allowed names (present in safe_dict below).
+            # 'sqrt' is NOT allowed: function calls are already blocked above,
+            # and 'sqrt' was never in safe_dict, so listing it was misleading dead code.
             if isinstance(child, ast.Name):
                 if child.id not in {'pi', 'e'}:
                     raise ValueError(f"❌ Змінна '{child.id}' не дозволена")
         
         # Безпечно обчислюємо
-        import math
         safe_dict = {
             'pi': math.pi,
             'e': math.e,
