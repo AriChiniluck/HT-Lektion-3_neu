@@ -1,7 +1,8 @@
-from typing import List, Dict, Any, Literal
+from typing import List, Dict, Any, Literal, Annotated, TypedDict
+from langgraph.graph.message import add_messages
 import concurrent.futures
 
-from langchain_core.messages import HumanMessage, AIMessage, BaseMessage, ToolMessage
+from langchain_core.messages import HumanMessage, AIMessage, BaseMessage, ToolMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 from langgraph.graph import StateGraph, END
 from langgraph.checkpoint.memory import MemorySaver
@@ -20,12 +21,14 @@ from tools import (
 )
 from config import settings, SYSTEM_PROMPT
 
+
 # ---------------------------------------------------------
 # Debug helper
 # ---------------------------------------------------------
 def debug_print(*args):
     if settings.debug:
         print("[DEBUG]", *args)
+
 
 # ---------------------------------------------------------
 # LangChain tools wrappers
@@ -108,8 +111,8 @@ prompt = ChatPromptTemplate.from_messages([
 # ---------------------------------------------------------
 # State
 # ---------------------------------------------------------
-class AgentState(dict):
-    messages: List[BaseMessage]
+class AgentState(TypedDict):
+    messages: Annotated[List[BaseMessage], add_messages]
     step_count: int
 
 
@@ -132,14 +135,23 @@ def agent_node(state: AgentState) -> AgentState:
         (msg.content for msg in reversed(state["messages"]) if isinstance(msg, HumanMessage)),
         "Опиши свій запит."
     )
-
-    formatted = prompt.format_messages(input=last_user)
-    ✅ ВИПРАВЛЕНО: видалено response = llm_tools.invoke(messages) подвійний виклик LLM в одному вузлі
     
+    
+    state_messages = list(state.get("messages", []))
+    debug_print(f"State messages count: {len(state_messages)}")
+
+    last_msg_types = [type(m).__name__ for m in state_messages[-3:]]
+    debug_print(f"Last message types (up to 3): {last_msg_types}")
+
+    last_msg_roles = [getattr(m, "type", type(m).__name__) for m in state_messages[-3:]]
+    debug_print(f"Last message roles (up to 3): {last_msg_roles}")
+
+
+
     # Pass system prompt + full message history so the agent sees all tool results
     messages = [SystemMessage(content=SYSTEM_PROMPT)] + list(state["messages"])
     response = llm_tools.invoke(messages)
-    
+
     debug_print(f"Response type: {type(response)}")
     debug_print(f"Tool calls: {getattr(response, 'tool_calls', None)}")
 
@@ -298,7 +310,6 @@ workflow.add_conditional_edges(
 )
 
 workflow.add_edge("tool", "agent")  # ✅ ВИПРАВЛЕНО: cycle back so agent sees tool results, Changed workflow.add_edge("tool", "summarizer") → workflow.add_edge("tool", "agent"), The graph now properly implements the ReAct pattern: agent → tool → agent → … → summarizer → save → END
-
 workflow.add_edge("summarizer", "save")
 workflow.add_edge("save", END)  # ✅ save → END
 
