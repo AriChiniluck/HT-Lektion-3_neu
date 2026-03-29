@@ -242,7 +242,7 @@ def summarizer_node(state: AgentState) -> AgentState:
         
         return {
             "messages": new_messages,
-            "step_count": state.get("step_count", 0),
+            "step_count": state.get("step_count", 0)+1,
         }
     except Exception as e:
         debug_print(f"Error in summarizer: {e}")
@@ -250,7 +250,7 @@ def summarizer_node(state: AgentState) -> AgentState:
         
         return {
             "messages": state["messages"] + [error_msg],
-            "step_count": state.get("step_count", 0),
+            "step_count": state.get("step_count", 0)+1,
         }
 
 
