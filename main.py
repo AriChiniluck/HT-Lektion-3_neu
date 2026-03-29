@@ -14,7 +14,7 @@ def run_agent(user_input, output_container, debug=False):
                 "messages": [HumanMessage(content=user_input)],
                 "step_count": 0,
             },
-            config={"thread_id": "session-1"},
+            config={"configurable": {"thread_id": "session-1"}},
         )
 
         messages = result.get("messages", [])
