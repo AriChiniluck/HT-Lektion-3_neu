@@ -20,14 +20,12 @@ from tools import (
 )
 from config import settings, SYSTEM_PROMPT
 
-
 # ---------------------------------------------------------
 # Debug helper
 # ---------------------------------------------------------
 def debug_print(*args):
     if settings.debug:
         print("[DEBUG]", *args)
-
 
 # ---------------------------------------------------------
 # LangChain tools wrappers
@@ -137,7 +135,11 @@ def agent_node(state: AgentState) -> AgentState:
 
     formatted = prompt.format_messages(input=last_user)
     response = llm_tools.invoke(formatted)
-
+    
+    # Pass system prompt + full message history so the agent sees all tool results
+    messages = [SystemMessage(content=SYSTEM_PROMPT)] + list(state["messages"])
+    response = llm_tools.invoke(messages)
+    
     debug_print(f"Response type: {type(response)}")
     debug_print(f"Tool calls: {getattr(response, 'tool_calls', None)}")
 
@@ -295,7 +297,8 @@ workflow.add_conditional_edges(
     }
 )
 
-workflow.add_edge("tool", "summarizer")
+workflow.add_edge("tool", "agent")  # ✅ ВИПРАВЛЕНО: cycle back so agent sees tool results, Changed workflow.add_edge("tool", "summarizer") → workflow.add_edge("tool", "agent"), The graph now properly implements the ReAct pattern: agent → tool → agent → … → summarizer → save → END
+
 workflow.add_edge("summarizer", "save")
 workflow.add_edge("save", END)  # ✅ save → END
 
