@@ -45,7 +45,7 @@ def generate_filename_from_query(text: str) -> str:
 # ---------------------------------------------------------
 # Search tool
 # ---------------------------------------------------------
-def search_tool(query: str):
+def search_tool_lc(query: str):
     """Пошук у DuckDuckGo з валідацією."""
     debug_print(f"search_tool called with query: {query}")
     
@@ -82,7 +82,7 @@ def search_tool(query: str):
 # ---------------------------------------------------------
 # Read URL tool
 # ---------------------------------------------------------
-def read_tool(url: str):
+def read_tool_lc(url: str):
     """Завантажує та витягує текст зі сторінки з перевіркою безпеки."""
     debug_print(f"read_tool called with url: {url}")
     
@@ -131,7 +131,7 @@ def read_tool(url: str):
 # ---------------------------------------------------------
 # Save report tool
 # ---------------------------------------------------------
-def save_report_tool(filename: str, content: str):
+def save_report_tool_lc(filename: str, content: str):
     """Зберігає текст у файл з валідацією."""
     debug_print(f"save_report_tool called with filename={filename}")
     
@@ -173,7 +173,7 @@ def save_report_tool(filename: str, content: str):
 # ---------------------------------------------------------
 # List files tool
 # ---------------------------------------------------------
-def list_files_tool(directory: str):
+def list_files_tool_lc(directory: str):
     """Показує файли в директорії з перевіркою безпеки."""
     debug_print(f"list_files_tool called with directory: {directory}")
     
@@ -201,7 +201,7 @@ def list_files_tool(directory: str):
 # ---------------------------------------------------------
 # Read file tool
 # ---------------------------------------------------------
-def read_file_tool(path: str):
+def read_file_tool_lc(path: str):
     """Читає файл з перевіркою безпеки та кодувань."""
     debug_print(f"read_file_tool called with path: {path}")
     
@@ -243,7 +243,7 @@ def read_file_tool(path: str):
 # ---------------------------------------------------------
 # Calculator tool - БЕЗПЕЧНА ВЕРСІЯ
 # ---------------------------------------------------------
-def calculate_tool(expression: str):
+def calculate_tool_lc(expression: str):
     """Обчислює математичний вираз БЕЗПЕЧНО без eval()."""
     debug_print(f"calculate_tool called with expression: {expression}")
     
@@ -288,3 +288,10 @@ def calculate_tool(expression: str):
     except Exception as e:
         debug_print(f"calculate_tool error: {e}")
         return f"❌ calculate_tool error: {e}"
+    
+search_tool = search_tool_lc
+read_tool = read_tool_lc
+save_report_tool = save_report_tool_lc
+list_files_tool = list_files_tool_lc
+read_file_tool = read_file_tool_lc
+calculate_tool = calculate_tool_lc
